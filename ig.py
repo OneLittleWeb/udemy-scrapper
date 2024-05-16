@@ -58,7 +58,7 @@ def main():
 
     results = []
     # Use ThreadPoolExecutor to execute multiple instances of Selenium concurrently
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=int(os.getenv('NUM_THREADS'))) as executor:
         futures = {executor.submit(scrape_data, row['url']): row for index, row in df_filtered.iterrows()}
         # Wrap futures in tqdm to show a progress bar
         for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc="Scraping URLs"):
