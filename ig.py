@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium_stealth import stealth
+from tqdm import tqdm  # Import tqdm for the progress bar
 
 def setup_driver():
     """Setup Selenium WebDriver with options."""
@@ -16,7 +17,6 @@ def setup_driver():
     options.add_argument("--disable-gpu")
     options.add_argument("--disable-extensions")
     options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-dev-shm-usage")
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     stealth(driver,
@@ -49,7 +49,6 @@ def scrape_data(url):
 def main():
     file_path = r'C:\Users\One Little Web\Desktop\udemy.csv'
     df = pd.read_csv(file_path)
-    # Filter rows where Reviews is empty
     df_filtered = df[df['Reviews'].isna() | (df['Reviews'] == '')]
     df_filtered = df_filtered.head(4)  # Limit to the first 10 entries
 
@@ -57,7 +56,8 @@ def main():
     # Use ThreadPoolExecutor to execute multiple instances of Selenium concurrently
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         futures = {executor.submit(scrape_data, row['url']): row for index, row in df_filtered.iterrows()}
-        for future in concurrent.futures.as_completed(futures):
+        # Wrap futures in tqdm to show a progress bar
+        for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc="Scraping URLs"):
             result = future.result()
             if result:
                 results.append(result)
