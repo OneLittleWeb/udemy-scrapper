@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import concurrent.futures
 from selenium import webdriver
@@ -9,6 +10,9 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium_stealth import stealth
 from tqdm import tqdm  # Import tqdm for the progress bar
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def setup_driver():
     """Setup Selenium WebDriver with options."""
@@ -47,10 +51,10 @@ def scrape_data(url):
     return result
 
 def main():
-    file_path = r'C:\Users\One Little Web\Desktop\udemy.csv'
+    file_path = os.getenv('FILE_PATH')  # Get the file path from environment variable
     df = pd.read_csv(file_path)
     df_filtered = df[df['Reviews'].isna() | (df['Reviews'] == '')]
-    df_filtered = df_filtered.head(4)  # Limit to the first 10 entries
+    df_filtered = df_filtered.head(int(os.getenv('NUM_ROWS')))  # Limit to the first 10 entries
 
     results = []
     # Use ThreadPoolExecutor to execute multiple instances of Selenium concurrently
